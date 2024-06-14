@@ -1,0 +1,58 @@
+/* css/styles.css */
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+	
+	.chessboard {
+		justify-content: center;
+		display: grid;
+		grid-template-columns: repeat(8, 50px);
+		grid-template-rows: repeat(8, 50px);
+	}
+	
+	.square {
+		width: 50px;
+		height: 50px;
+	}
+	.white {
+		background-color: white;
+	}
+	.black {
+		background-color: black;
+	}
+}
+
+header {
+    background-color: #333;
+    color: white;
+    padding: 10px 0;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    text-align: center;
+}
+
+nav ul li {
+    display: inline;
+    margin: 0 10px;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+}
+
+nav ul li a:hover {
+    text-decoration: underline;
+}
+
+main {
+    padding: 20px;
+    text-align: center;
+}
+
