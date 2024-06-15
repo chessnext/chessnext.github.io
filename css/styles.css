@@ -7,12 +7,29 @@ body {
     background-color: #f4f4f4;
 	
 	.chessboard {
-		justify-content: center;
+		align-items: center;
+        justify-content: center;
+        font-size: 1.5em;
+        color: red;
+        position: relative;
 		display: grid;
 		grid-template-columns: repeat(8, 50px);
 		grid-template-rows: repeat(8, 50px);
 	}
 	
+    .startmessage {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(0, 0, 0, 0.7);  /* Optional: Semi-transparent background */
+        color: white;
+        padding: 20px;
+        font-size: 1.5em;
+        cursor: pointer;
+        z-index: 10;
+    }
+
 	.square {
 		width: 50px;
 		height: 50px;
@@ -21,8 +38,54 @@ body {
 		background-color: white;
 	}
 	.black {
-		background-color: black;
+		background-color: gray;
 	}
+    .white:hover {
+        background-color: lightblue;
+    }
+    .black:hover {
+        background-color: lightblue;
+    }
+    .player {
+        top: 50%;
+        left: 50%;
+        position: absolute;
+        align-items: center;
+        justify-content: center;
+        z-index: -10;
+        font-size: 1.5em;
+        color: blue;
+    }
+    .knightEnemy {
+        top: 50%;
+        left: 50%;
+        position: absolute;
+        align-items: center;
+        justify-content: center;
+        z-index: -10;
+        font-size: 1.5em;
+        color: red;
+    }
+    .rookEnemy {
+        top: 50%;
+        left: 50%;
+        position: absolute;
+        align-items: center;
+        justify-content: center;
+        z-index: -10;
+        font-size: 1.5em;
+        color: red;
+    }
+    .bishopEnemy {
+        top: 50%;
+        left: 50%;
+        position: absolute;
+        align-items: center;
+        justify-content: center;
+        z-index: -10;
+        font-size: 1.5em;
+        color: red;
+    }
 }
 
 header {
