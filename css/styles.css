@@ -12,7 +12,7 @@ body {
         font-size: 1.5em;
         color: red;
         position: relative;
-		display: grid;
+		display: inline-grid;
 		grid-template-columns: repeat(8, 50px);
 		grid-template-rows: repeat(8, 50px);
 	}
