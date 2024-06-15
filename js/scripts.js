@@ -36,16 +36,16 @@ function initializePlayer(){
     const player = document.getElementById('player');
 
     let spawnPosition = {x: getRandomInt(0,7), y: getRandomInt(0,7)};
-    let idString = `[${spawnPosition.x},${spawnPosition.y}]`;
+    let idString = `[${spawnPosition.y},${spawnPosition.x}]`;
     let targetDiv = document.getElementById(idString);
     let parentDiv = document.getElementById('chessboard');
 
     let rect = targetDiv.getBoundingClientRect(idString);
     let computedStyle = window.getComputedStyle(targetDiv);
-    let parentrect = targetDiv.getBoundingClientRect(parentDiv);
+    let parentrect = parentDiv.getBoundingClientRect(parentDiv);
 
-    let targetX = rect.left + rect.width / 2 - 36 - 2;
-    let targetY = rect.top + rect.height / 2 - 28 - parentrect.top;
+    let targetX = rect.x - parentrect.x + rect.width / 2 - 18;
+    let targetY = rect.y - parentrect.y + rect.height / 2 - 25;
 
     player.style.top = `${targetY}px`;
     player.style.left = `${targetX}px`;
