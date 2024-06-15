@@ -44,8 +44,8 @@ function initializePlayer(){
     let computedStyle = window.getComputedStyle(targetDiv);
     let parentrect = targetDiv.getBoundingClientRect(parentDiv);
 
-    let targetX = rect.left + window.scrollX + rect.width / 2 - 36 - 2;
-    let targetY = rect.top + window.scrollY + rect.height / 2 - 28 - parentrect;
+    let targetX = rect.left + rect.width / 2 - 36 - 2;
+    let targetY = rect.top + rect.height / 2 - 28 - parentrect.top;
 
     player.style.top = `${targetY}px`;
     player.style.left = `${targetX}px`;
