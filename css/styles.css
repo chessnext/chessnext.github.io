@@ -59,7 +59,7 @@ body {
         justify-content: center;
         z-index: -10;
         font-size: 1.5em;
-        color: blue;
+        color: black;
         transition: top 0.5s linear, left 0.5s linear;
     }
     .knightEnemy {
@@ -70,7 +70,8 @@ body {
         justify-content: center;
         z-index: -10;
         font-size: 1.5em;
-        color: red;
+        color: blue;
+        transition: top 0.5s linear, left 0.5s linear;
     }
     .rookEnemy {
         top: 50%;
