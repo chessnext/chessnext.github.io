@@ -1,10 +1,10 @@
 // js/scripts.js
 
+var currentLevel = 1;
 const knightEnemy = '♘';
 const rookEnemy = '♖';
 const bishopEnemy = '♗';
 var enemyType = "Knight";
-var numberOfEnemies;
 var gameStarted = false;
 var levelFinished = false;
 var playerPosition = [-1,-1];
@@ -203,6 +203,7 @@ const invalidMove = null;
 
 class Enemy {
     constructor() {
+    this.dead=true;
         this.position = new Vector2();
         this.enemyType = "Knight";
         this.paralyzed = false;
@@ -230,34 +231,78 @@ class Enemy {
         this.attackAnimated = null;
     }
     
-    wait(ms) {
-  
-}      async waitAndMove() {
-  var i=0;
-    while (i < 100) {
+    die() {
+    this.dead = true;
+    
+    if (this.domElement) {
+        this.domElement.style.zIndex = '-10';
+        this.domElement.style.opacity = '0.2'; // vagy display = 'none'
+        // opcionálisan: this.domElement.remove(); teljes törléshez
+    }
 
-      
+    this.position.x = -10;
+    this.position.y = -10;
+}
+
+    
+    makeEnemyMove(movePosition){
+    let idString = '['+movePosition[0]+','+movePosition[1]+']';
+    let targetDiv = document.getElementById(idString);
+    let parentDiv = document.getElementById('chessboard');
+
+    let rect = targetDiv.getBoundingClientRect(idString);
+    let computedStyle = window.getComputedStyle(targetDiv);
+    let parentrect = parentDiv.getBoundingClientRect(parentDiv);
+
+    let targetX = rect.x - parentrect.x + rect.width / 2 - 18;
+    let targetY = rect.y - parentrect.y + rect.height / 2 - 25;
+
+    this.position.x = movePosition[0];
+    this.position.y = movePosition[1];
+    this.domElement.style.top = `${targetY}px`;
+    this.domElement.style.left = `${targetX}px`;
+    
+}
+
+    
+      async waitAndMove() {
+    let i=0;
+    while (i<500) {
 
       this.timer = Math.random() * 2 + 1;
-     
       
       // Várakozás a timer idejéigb
       await new Promise(resolve => setTimeout(resolve, this.timer*1000));
       
-     
-      let b = this.findMoveAStar(enemyType,myEnemy.position,new Vector2(playerPosition[0],playerPosition[1]));
-      // fix call
+      let b;
       
-      if (playerDead) 
-        b = this.randomMove();
-      
+      b = this.findMoveAStar(enemyType,this.position,new Vector2(playerPosition[0],playerPosition[1]));
+    
       let temp = [b.x,b.y]
       
-      makeEnemyMove(temp);
+      this.makeEnemyMove(temp);
+      if (temp[0]==playerPosition[0] && temp[1]==playerPosition[1])
+      {
+      //todo
+      if (!checkLevelEnd() && !this.dead){
+         alert("Game Over");
+         playerDies();
+        }
+      }
       
-      i--;
+      i++;
+      
 }
 
+function playerDies(){
+     const params = new URLSearchParams(window.location.search);
+    const currentLevel = parseInt(params.get('level'));
+    const safeLevel = !isNaN(currentLevel) && currentLevel > 0 ? currentLevel : 1;
+    const nextLevel = 1;
+
+    const newUrl = `${window.location.origin}${window.location.pathname}?level=${nextLevel}`;
+    window.location.href = newUrl;
+}
     
 }
     static get moveTime() {
@@ -387,11 +432,32 @@ findMoveAStar(enemyType, startPos, targetPos) {
 }
 
   
-  randomMove() {
-    // Véletlenszerű pozíció
-    return { x: this.position.x + (Math.random() - 0.5) * 2, y: this.posztion.y + (Math.random() - 0.5) * 2 };
-  }
+randomMove() {
+    const directions = [
+        { x: 1, y: 2 },  
+        { x: 2, y: 1},  
+        { x: -2, y: 1 }, 
+        { x: 1, y: -2}, 
+        { x: -1, y: -2},  
+        { x: 2, y: -1},  
+        { x: -2, y: -1 },
+        { x: -1, y: 2}
+    ];
 
+    const validMoves = directions
+        .map(dir => ({
+            x: this.position.x + dir.x,
+            y: this.position.y + dir.y
+        }))
+        .filter(pos => pos.x >= 0 && pos.x <= 7 && pos.y >= 0 && pos.y <= 7);
+
+    if (validMoves.length === 0) {
+        return { x: this.position.x, y: this.position.y };
+    }
+
+    const chosen = validMoves[Math.floor(Math.random() * validMoves.length)];
+    return chosen;
+}
 
   isPositionTaken(pos) {
     // Ellenőrizd, hogy a pozíció foglalt-e
@@ -612,6 +678,10 @@ const movesArray =[
 
 let moveCountsKnight = new Array(8);
 
+
+
+
+
 document.addEventListener('DOMContentLoaded', function() {
 
 for (let x1 = 0; x1 < 8; x1++) {
@@ -627,24 +697,48 @@ for (let x1 = 0; x1 < 8; x1++) {
     const chessboard = document.getElementById('chessboard');
     const startmessage = document.getElementById('startmessage');
 
-    // Tábla kattintás
-    chessboard.addEventListener('click', (event) => {
-        const clickedCell = event.target;
-        if (clickedCell.classList.contains('square')) {
-            var clickedCoordinate = JSON.parse(clickedCell.id);
-            if (moveIsValid(clickedCoordinate))
-                makePlayerMove(clickedCoordinate);
-        }
-    });
 
+
+
+
+
+
+
+
+document.querySelectorAll('.square, .knightEnemy, .rookEnemy, .bishopEnemy').forEach(cell => {
+  cell.addEventListener('click', (e) => {
+    let target;
+
+         if (cell.classList.contains('square')) {
+      // ID alapján koordináta
+      const id = cell.id;
+      try {
+        target = JSON.parse(id); // az id pl. "[3,2]"
+      } catch {
+        return;
+      }
+    } else {
+      
+      let matchingEnemy = allEnemies.find(enemy => enemy.domElement === cell);
+      if (!matchingEnemy || matchingEnemy.dead) return;
+
+      target = [matchingEnemy.position.x, matchingEnemy.position.y];
+    }
+if (moveIsValid(target))
+    makePlayerMove(target);
+  });
+});
+          
     // Játék indítása
     startmessage.addEventListener('click', function() {
-        gameStarted = true;
-        levelFinished = false;
+        
         this.style.zIndex = '-10';
         
+        initializeLevel();
+        initializeEnemies();
+        spawnEnemiesForLevel(currentLevel);
         initializePlayer();
-        initializeEnemySpawn();
+        enemiesWaitAndMove();
     });
 });
 
@@ -678,24 +772,93 @@ function convertTo4D(raw) {
 }
 
 let myEnemy;
+let enemies = [];
+
+function initializeLevel(){
+    const params = new URLSearchParams(window.location.search);
+const levelFromURL = parseInt(params.get('level'));
+if (!isNaN(levelFromURL) && levelFromURL > 0) {
+    currentLevel = levelFromURL;
+}
+}
+
+function initializeEnemies() {
+
+for (let i = 0; i <= 62; i++) {
+    const element = document.getElementById(`knightEnemy${i}`);
+    if (element) {
+        let enemy = new Enemy();             // saját Enemy osztályod
+        enemy.enemyType = "Knight";
+        enemy.domElement = element;          // opcionális: DOM referencia
+        enemies.push(enemy);
+    }
+}
+
+}
+
+function spawnEnemiesForLevel(currentLevel) {
+    const usedPositions = new Set();
+    for (let i = 0; i < currentLevel; i++) {
+        const enemy = enemies[i]; // a korábban létrehozott Enemy példányok tömbje
+        if (!enemy) continue;
+
+        let x, y, key;
+        let attempts = 0;
+
+        // Addig próbálkozunk, amíg nem találunk szabad mezőt
+        do {
+            x = Math.floor(Math.random() * 8);
+            y = Math.floor(Math.random() * 8);
+            key = `${x},${y}`;
+            attempts++;
+            if (attempts > 1000) {
+                console.warn("Nem található több szabad mező!");
+                break;
+            }
+        } while (usedPositions.has(key));
+
+        usedPositions.add(key);
+
+        // beállítjuk az enemy állapotát
+        enemy.dead = false;
+        enemy.position = new Vector2(x, y);
+        if (enemy.domElement) {
+      let idString = '['+x+','+y+']';
+    let targetDiv = document.getElementById(idString);
+    let parentDiv = document.getElementById('chessboard');
+
+    let rect = targetDiv.getBoundingClientRect(idString);
+    let computedStyle = window.getComputedStyle(targetDiv);
+    let parentrect = parentDiv.getBoundingClientRect(parentDiv);
+
+    let targetX = rect.x - parentrect.x + rect.width / 2 - 18;
+    let targetY = rect.y - parentrect.y + rect.height / 2 - 25;
+    enemy.domElement.style.top = `${targetY}px`;
+    enemy.domElement.style.left = `${targetX}px`;
+    enemy.domElement.style.zIndex = 10;
+        }
+    }
+}
+
+function enemiesWaitAndMove() {
+    enemies.forEach(enemy => {
+        if (!enemy.dead) {
+            enemy.waitAndMove();
+        }
+    });
+}
 
 function initializeEnemySpawn() {
-    myEnemy = new Enemy();
-    const enemy =
-    document.getElementById('knightEnemy');
+    
     moveCountsKnight = convertTo4D(moveCountsKnightRaw);
     
     let spawnPosition = [getRandomInt(0,7),getRandomInt(0,7)];
     
     while (spawnPosition[0] === playerSpawnPosition[0] && spawnPosition[1] === playerSpawnPosition[1])
     spawnPosition = [getRandomInt(0,7),getRandomInt(0,7)];
-    
-    makeEnemyMove(spawnPosition);
-    
-    enemy.style.zIndex = 10;
-    
-    myEnemy.waitAndMove();
-    
+   
+    if (!gameStarted)
+    this.makeEnemyMove(spawnPosition);
 }
 
 function initializePlayer(){
@@ -704,7 +867,7 @@ function initializePlayer(){
     playerSpawnPosition = [getRandomInt(0,7),getRandomInt(0,7)];
     
     makePlayerMove(playerSpawnPosition);
-    
+    playerDead=false;
     player.style.zIndex = 10;
     
     
@@ -724,31 +887,44 @@ function makePlayerMove(movePosition){
 
     let targetX = rect.x - parentrect.x + rect.width / 2 - 18;
     let targetY = rect.y - parentrect.y + rect.height / 2 - 25;
-
+ 
     playerPosition = movePosition;
     player.style.top = `${targetY}px`;
     player.style.left = `${targetX}px`;
     
+    checkPlayerHitsEnemy();
+    
+    if(checkLevelEnd())
+     levelEnd();
 }
 
-function makeEnemyMove(movePosition){
-    let idString = '['+movePosition[0]+','+movePosition[1]+']';
-    let targetDiv = document.getElementById(idString);
-    let parentDiv = document.getElementById('chessboard');
 
-    let rect = targetDiv.getBoundingClientRect(idString);
-    let computedStyle = window.getComputedStyle(targetDiv);
-    let parentrect = parentDiv.getBoundingClientRect(parentDiv);
+function levelEnd() {
+    const params = new URLSearchParams(window.location.search);
+    const currentLevel = parseInt(params.get('level'));
+    const safeLevel = !isNaN(currentLevel) && currentLevel > 0 ? currentLevel : 1;
+    const nextLevel = safeLevel + 1;
 
-    let targetX = rect.x - parentrect.x + rect.width / 2 - 18;
-    let targetY = rect.y - parentrect.y + rect.height / 2 - 25;
+    const newUrl = `${window.location.origin}${window.location.pathname}?level=${nextLevel}`;
+    window.location.href = newUrl;
+}
 
-    myEnemy.position.x = movePosition[0];
-    myEnemy.position.y = movePosition[1];
-    enemy.style.top = `${targetY}px`;
-    enemy.style.left = `${targetX}px`;
-    
+
+function checkLevelEnd() {
+    const aliveEnemies = enemies.filter(enemy => !enemy.dead).length;
+    return aliveEnemies === 0;
+}
+
+function checkPlayerHitsEnemy() {
+    enemies.forEach(enemy => {
+        if (!enemy.dead &&
+            enemy.position.x == playerPosition[0] &&
+            enemy.position.y == playerPosition[1]) {
+            enemy.die();
+             if(checkLevelEnd())
+               levelEnd();
+        }
+    });
 }
 
 function moveIsValid(moveTo) { let validMoves = []; for (let i = 0; i < movesArray.length; i++) { const newMove = [playerPosition[0] + movesArray[i][0], playerPosition[1] + movesArray[i][1]]; validMoves.push(newMove); } console.log("Valid Moves:", validMoves); console.log("Move To:", moveTo); const isValid = validMoves.some(vm => vm[0] === moveTo[0] && vm[1] === moveTo[1]); if (isValid) { console.log("Move is valid."); return true; } else { console.log("Move is not valid."); return false; } }
-
